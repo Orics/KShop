@@ -1,0 +1,72 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="col-lg-1 position-fixed mt-0 p-0">
+    <ul class="list-group">
+        <li class="list-group-item"> <a href="/Phones"> Phones </a> </li>
+        <li class="list-group-item"> <a href="/Laptops"> Laptops </a> </li>
+        <li class="list-group-item" style="height: 100vh"> </li>
+    </ul>
+</div>
+
+<div class="col-lg-11 offset-1 pt-2">
+    <div class="row p-3">
+        @(Html.Kendo().Grid<KShop.Models.Phone>()
+        .Name("phones")
+        .Columns(cols=> {
+            cols.Bound(p => p.ProductName);
+            cols.Bound(p => p.Production).Width(200);
+            cols.Bound(p => p.Price).Width(150);
+            cols.Bound(p => p.Quantity).Width(150);
+            // cols.Bound(p => p.Id).Width(100).Title("Edit").ClientTemplate("<a role='button' class='k-button k-button-icontext' href='/Phones/Edit/#=Id#'><span class='k-icon k-i-edit'></span>Edit</a>");
+            cols.Command(command =>
+            {
+                //"<a role='button' class='k-button k-button-icontext k-grid-delete' href='#'><span class='k-icon k-i-close'></span>Delete</a>"
+                // Html.ActionLink("#=Id#", "Edit", "Phones", new { Id = "#=Id#" }, null).ToString()
+                // command.Custom("Edit").;
+                command.Custom("Edit").Template("<a role='button' class='k-button k-button-icontext' href='/Phones/Edit/'><span class='k-icon k-i-edit'></span>Edit</a>");
+                command.Destroy();
+            }).Width(170).Title("Options");
+        })
+        .ToolBar(toolbar=> {
+            toolbar.Search();
+            toolbar.Custom().Action("Create","Phones");
+        })
+        .Height(550)
+        .ColumnMenu(col => col.Filterable(false))
+        .Navigatable()
+        .Scrollable()
+        .Sortable()
+        .Pageable(pageable => pageable
+            .Refresh(true)
+            .PageSizes(true)
+            .ButtonCount(5)
+        )
+        .DataSource(data=> data
+            .Custom()
+            .Batch(true)
+            .Schema(schema=> schema.Model(m=> m.Id(p=> p.Id)))
+            .Transport(trans=> {
+                trans.Read(read =>
+                    read.Url("https://localhost:44347/api/phones").DataType("json").Type(HttpVerbs.Get)
+                );
+                trans.Destroy(destroy =>
+                    destroy.Url("https://localhost:44347/api/phones/delete").Type(HttpVerbs.Delete)
+                );
+                trans.ParameterMap("kendoGridParameterMap");
+            })
+        )
+    )
+    </div>
+</div>
+<script>
+    function kendoGridParameterMap(data, operation) {
+        if (operation !== "read" && data.models) {
+           // alert(kendo.stringify());
+            return { id:  };
+        }
+    }
+</script>
